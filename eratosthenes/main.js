@@ -49,8 +49,9 @@
      p = số đang sàng (1 = chưa chọn số nào), m = bội kế tiếp sẽ xét; m > N nghĩa là xong lượt của p.
      spf[k] = ước nguyên tố nhỏ nhất của k, dùng để chấm khi người dùng tự gạch; total = số hợp số ≤ N.
      markT[k], markOk[k] = lúc người dùng bấm vào ô k và bấm đúng hay sai.
+     exam = chế độ thi: 0 không thi, 1 đang thi (đồng hồ chạy từ t0), 2 thi xong (mất tEnd ms).
      rounds = nhật ký từng lượt: { p, n } với n là số ô lượt đó gạch mới. */
-  const S = { N: 100, cols: 10, by: null, flash: null, spf: null, total: 0, markT: null, markOk: null, ok: 0, bad: 0, cw: 1, ch: 1, p: 1, m: 0, lastM: 0, struck: 0, rounds: [], done: false, running: false, acc: 0, dirty: true, fading: false };
+  const S = { N: 100, cols: 10, by: null, flash: null, spf: null, total: 0, markT: null, markOk: null, ok: 0, bad: 0, cw: 1, ch: 1, exam: 0, t0: 0, tEnd: 0, newBest: false, p: 1, m: 0, lastM: 0, struck: 0, rounds: [], done: false, running: false, acc: 0, dirty: true, fading: false };
   const cv = $('e-canvas');
 
   function reset() {
@@ -59,7 +60,7 @@
     S.markT = new Float64Array(S.N + 1);
     S.markOk = new Uint8Array(S.N + 1);
     S.spf = new Uint16Array(S.N + 1);
-    S.total = 0; S.ok = 0; S.bad = 0;
+    S.total = 0; S.ok = 0; S.bad = 0; S.exam = 0; S.newBest = false;
     for (let i = 2; i <= S.N; i++) {
       if (S.spf[i]) { S.total++; continue; }
       for (let j = i; j <= S.N; j += i) if (!S.spf[j]) S.spf[j] = i;
@@ -93,6 +94,29 @@
     if (ok) { S.by[k] = S.spf[k]; S.struck++; S.ok++; } else S.bad++;
     S.markT[k] = now; S.markOk[k] = ok ? 1 : 0;
     S.dirty = true;
+    if (S.exam === 1 && S.struck === S.total) finishExam(now);
+  }
+
+  /* Chế độ thi: người dùng tự gạch hết mọi hợp số, đồng hồ đo từ lúc bấm nút đến lúc gạch xong.
+     Kỷ lục lưu riêng cho từng N trong localStorage (không có cũng không sao). */
+  const fmtTime = (ms) => {
+    const t = Math.max(0, Math.floor(ms / 100));
+    return Math.floor(t / 600) + ':' + String(Math.floor(t / 10) % 60).padStart(2, '0') + ',' + (t % 10);
+  };
+  function readBest() {
+    try { const v = +localStorage.getItem('sieve-best-' + S.N); return v > 0 ? v : 0; } catch (e) { return 0; }
+  }
+  function startExam() {
+    setRunning(false);
+    reset();
+    S.exam = 1; S.t0 = performance.now();
+  }
+  function finishExam(now) {
+    S.exam = 2; S.tEnd = now - S.t0;
+    S.done = true; S.p = 0;                           // tô màu các số nguyên tố còn lại
+    const best = readBest();
+    S.newBest = !best || S.tEnd < best;
+    if (S.newBest) try { localStorage.setItem('sieve-best-' + S.N, String(Math.round(S.tEnd))); } catch (e) { /* không lưu được thì thôi */ }
   }
   function finishRound(now) { do step(now); while (!S.done && S.m <= S.N); }
   function finishAll(now) { while (!S.done) step(now); }
@@ -170,8 +194,17 @@
 
   function stats() {
     const N = S.N;
-    $('e-left').textContent = int(N - 1 - S.struck);
-    $('e-status').textContent = S.done
+    const examBtn = $('e-exam');
+    examBtn.textContent = S.exam === 1 ? 'Dừng thi' : S.exam === 2 ? 'Thi lại' : 'Thi tính giờ';
+    examBtn.setAttribute('aria-pressed', String(S.exam === 1));
+    for (const id of ['e-play', 'e-step', 'e-round', 'e-all']) $(id).disabled = S.exam === 1;   // đang thi thì không được nhờ máy
+    const best = readBest();
+    $('e-best').textContent = best ? fmtTime(best) : '—';
+    $('e-label').textContent = S.exam ? 'Thời gian thi' : 'Số chưa bị gạch';
+    $('e-left').textContent = S.exam === 1 ? fmtTime(performance.now() - S.t0) : S.exam === 2 ? fmtTime(S.tEnd) : int(N - 1 - S.struck);
+    $('e-status').textContent = S.exam === 1 ? 'Còn ' + int(N - 1 - S.struck) + ' số chưa gạch · sai ' + int(S.bad) + ' lần'
+      : S.exam === 2 ? 'Xong: ' + int(N - 1 - S.struck) + ' số nguyên tố ≤ ' + int(N) + ' · sai ' + int(S.bad) + ' lần' + (S.newBest ? ' · kỷ lục mới' : '')
+      : S.done
       ? 'Xong: có ' + int(N - 1 - S.struck) + ' số nguyên tố ≤ ' + int(N)
       : S.struck === S.total ? 'Đã gạch hết hợp số, còn lại toàn số nguyên tố'
       : S.p > 1 ? 'Đang gạch các bội của ' + S.p : 'Chưa bắt đầu';
@@ -210,6 +243,7 @@
   $('e-step').addEventListener('click', () => step(performance.now()));
   $('e-round').addEventListener('click', () => finishRound(performance.now()));
   $('e-all').addEventListener('click', () => finishAll(performance.now()));
+  $('e-exam').addEventListener('click', () => { if (S.exam === 1) reset(); else startExam(); });
   $('e-reset').addEventListener('click', () => { setRunning(false); reset(); });
   cv.addEventListener('click', (e) => {
     const r = cv.getBoundingClientRect();
@@ -238,6 +272,7 @@
       if (S.done) setRunning(false);
     }
     if (S.dirty || S.fading) { draw(palette(), now); stats(); S.dirty = false; }
+    else if (S.exam === 1) $('e-left').textContent = fmtTime(now - S.t0);   // đồng hồ chạy mà không cần vẽ lại bảng
     requestAnimationFrame(frame);
   }
 

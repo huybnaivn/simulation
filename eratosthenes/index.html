@@ -40,7 +40,7 @@
 
       <div class="panel">
         <div class="headline">
-          <span class="label">Số chưa bị gạch</span>
+          <span class="label" id="e-label">Số chưa bị gạch</span>
           <span class="value" id="e-left">0</span>
           <span class="sub" id="e-status"></span>
         </div>
@@ -50,6 +50,7 @@
           <button id="e-step">1 bước</button>
           <button id="e-round">Hết lượt p</button>
           <button id="e-all">Sàng hết</button>
+          <button class="exam" id="e-exam" aria-pressed="false">Thi tính giờ</button>
           <button class="reset" id="e-reset">Làm lại từ đầu</button>
         </div>
 
@@ -67,6 +68,7 @@
             <input type="range" id="e-cols" min="2" max="40" step="1" value="10">
           </div>
           <p class="hint">Bấm vào một số trên bảng để tự gạch: hợp số thì nháy xanh và bị gạch, số nguyên tố (hoặc số 1) thì nháy đỏ và không bị gạch.</p>
+          <p class="hint">Thi tính giờ: bảng trở về ban đầu, bạn tự gạch hết mọi hợp số; đồng hồ dừng khi không còn hợp số nào. Bấm sai không bị gạch nhưng được đếm lại.</p>
           <p class="hint">Đổi N sẽ bắt đầu lại. Đổi số cột thì không: thử 6 cột để thấy mọi số nguyên tố lớn hơn 3 đều nằm ở cột 1 và cột 5.</p>
         </div>
 
@@ -76,6 +78,7 @@
           <dt>Hợp số đã gạch</dt><dd id="e-struck">0</dd>
           <dt>Tự gạch đúng</dt><dd id="e-ok">0</dd>
           <dt>Tự gạch sai</dt><dd id="e-bad">0</dd>
+          <dt>Kỷ lục thi với N này</dt><dd id="e-best">—</dd>
           <dt>√N</dt><dd id="e-sqrt">—</dd>
           <dt>Ước lượng N / ln N</dt><dd id="e-approx">—</dd>
         </dl>
