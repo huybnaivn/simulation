@@ -13,6 +13,7 @@
   <header>
     <nav aria-label="Thí nghiệm">
       <a href="../index.html">Trang chủ</a>
+      <a href="../buffon/index.html">Kim Buffon</a>
       <a href="index.html" aria-current="page">Bảng Galton</a>
     </nav>
   </header>
@@ -30,11 +31,9 @@
 
     <div class="sim">
       <div class="stage">
-        <canvas id="g-canvas" role="img" aria-label="Bảng đinh Galton với các viên bi đang rơi và biểu đồ cột số bi trong từng ô"></canvas>
+        <canvas id="g-canvas" role="img" aria-label="Bảng đinh Galton với các viên bi đang rơi và các viên bi xếp chồng trong từng ô"></canvas>
         <p class="caption">
-          <span class="key"><span class="swatch acc"></span>Số bi trong ô</span>
-          <span class="key"><span class="swatch dot"></span>Kỳ vọng nhị thức</span>
-          <span class="key"><span class="swatch hit"></span>Xấp xỉ chuẩn</span>
+          <label class="key toggle"><input type="checkbox" id="g-show-normal" checked><span class="swatch hit"></span>Xấp xỉ chuẩn</label>
         </p>
       </div>
 
@@ -42,7 +41,6 @@
         <div class="headline">
           <span class="label">Số bi đã rơi</span>
           <span class="value" id="g-n">0</span>
-          <span class="sub" id="g-mode">&nbsp;</span>
         </div>
 
         <div class="buttons">
@@ -75,6 +73,11 @@
           <dt>Độ lệch chuẩn mẫu</dt><dd id="g-sd">—</dd>
           <dt>Lý thuyết σ</dt><dd id="g-sigma">—</dd>
         </dl>
+
+        <table class="bins">
+          <thead><tr><th scope="col">Ô</th><th scope="col">Số bi</th><th scope="col">Dự đoán</th></tr></thead>
+          <tbody id="g-table-body"></tbody>
+        </table>
       </div>
     </div>
   </section>
