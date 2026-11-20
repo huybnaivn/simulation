@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Máy Galton</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <nav aria-label="Thí nghiệm">
+      <a href="buffon.html">Kim Buffon</a>
+      <a href="galton.html" aria-current="page">Máy Galton</a>
+    </nav>
+  </header>
+
+  <section id="galton" aria-labelledby="g-title">
+    <div class="intro">
+      <h2 id="g-title">Máy Galton</h2>
+      <p>Mỗi viên bi rơi qua <i>n</i> hàng đinh. Tại mỗi đinh, bi lệch phải với xác suất <i>p</i> và lệch trái với xác suất 1 − <i>p</i>. Số lần lệch phải quyết định ô bi rơi vào, nên số bi trong các ô tuân theo phân phối nhị thức. Khi <i>n</i> lớn, hình dạng này tiến về đường cong chuẩn.</p>
+      <div class="formula">
+        <span>P(ô k) = C(n, k) · pᵏ · (1 − p)ⁿ⁻ᵏ</span>
+        <span>μ = np</span>
+        <span>σ = √(np(1 − p))</span>
+      </div>
+    </div>
+
+    <div class="sim">
+      <div class="stage">
+        <canvas id="g-canvas" role="img" aria-label="Bảng đinh Galton với các viên bi đang rơi và biểu đồ cột số bi trong từng ô"></canvas>
+        <p class="caption">
+          <span class="key"><span class="swatch acc"></span>Số bi trong ô</span>
+          <span class="key"><span class="swatch dot"></span>Kỳ vọng nhị thức</span>
+          <span class="key"><span class="swatch hit"></span>Xấp xỉ chuẩn</span>
+        </p>
+      </div>
+
+      <div class="panel">
+        <div class="headline">
+          <span class="label">Số bi đã rơi</span>
+          <span class="value" id="g-n">0</span>
+          <span class="sub" id="g-mode">&nbsp;</span>
+        </div>
+
+        <div class="buttons">
+          <button class="primary" id="g-play" aria-pressed="false">Chạy tự động</button>
+          <button id="g-1">Thả 1</button>
+          <button id="g-100">Thả 100</button>
+          <button id="g-10k">Thả 10.000</button>
+          <button class="reset" id="g-reset">Làm lại từ đầu</button>
+        </div>
+
+        <div class="sliders">
+          <div class="field">
+            <label for="g-speed">Tốc độ <output id="g-speed-out"></output></label>
+            <input type="range" id="g-speed" min="1" max="5" step="1" value="3">
+          </div>
+          <div class="field">
+            <label for="g-rows">Số hàng đinh n <output id="g-rows-out"></output></label>
+            <input type="range" id="g-rows" min="2" max="18" step="1" value="12">
+          </div>
+          <div class="field">
+            <label for="g-p">Xác suất lệch phải p <output id="g-p-out"></output></label>
+            <input type="range" id="g-p" min="0.1" max="0.9" step="0.05" value="0.5">
+          </div>
+          <p class="hint">Đổi n hoặc p sẽ bắt đầu lại thí nghiệm.</p>
+        </div>
+
+        <dl>
+          <dt>Trung bình mẫu</dt><dd id="g-mean">—</dd>
+          <dt>Lý thuyết μ = np</dt><dd id="g-mu">—</dd>
+          <dt>Độ lệch chuẩn mẫu</dt><dd id="g-sd">—</dd>
+          <dt>Lý thuyết σ</dt><dd id="g-sigma">—</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="common.js"></script>
+<script src="galton.js"></script>
+</body>
+</html>

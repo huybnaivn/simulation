@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kim Buffon</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <nav aria-label="Thí nghiệm">
+      <a href="buffon.html" aria-current="page">Kim Buffon</a>
+      <a href="galton.html">Máy Galton</a>
+    </nav>
+  </header>
+
+  <section id="buffon" aria-labelledby="b-title">
+    <div class="intro">
+      <h2 id="b-title">Kim Buffon</h2>
+      <p>Thả ngẫu nhiên một cây kim dài <i>l</i> lên sàn gỗ có các vạch song song cách đều nhau một khoảng <i>d</i> (với <i>l</i> ≤ <i>d</i>). Đếm số kim cắt vạch <i>H</i> trong <i>N</i> lần thả, ta ước lượng được số π.</p>
+      <div class="formula">
+        <span>P(cắt vạch) = 2l / (πd)</span>
+        <span>π ≈ 2l·N / (d·H)</span>
+      </div>
+    </div>
+
+    <div class="sim">
+      <div class="stage">
+        <div class="b-wrap" id="b-wrap">
+          <canvas id="b-3d" role="img" aria-label="Cảnh 3D: sàn gỗ với các vạch song song, kim được tung lên rồi rơi xuống sàn"></canvas>
+          <div class="tray" id="b-tray">
+            <button class="tray-item" data-tool="1" aria-pressed="true" aria-label="Mỗi lần thả 1 kim" title="1 kim"><span class="pin"></span></button>
+            <button class="tray-item" data-tool="10" aria-pressed="false" aria-label="Mỗi lần thả 10 kim" title="10 kim"><span class="pin many"></span></button>
+          </div>
+        </div>
+        <canvas id="b-canvas" hidden role="img" aria-label="Sàn gỗ với các vạch song song và những cây kim đã thả"></canvas>
+        <div class="viewbar" id="b-viewbar">
+          <button id="b-view-tilt" aria-pressed="true">Nghiêng nhẹ</button>
+          <button id="b-view-top" aria-pressed="false">Thẳng đứng</button>
+          <label class="keep" for="b-keep">Hiện <input type="number" id="b-keep" min="0" max="2500" step="1" value="20" inputmode="numeric"> kim gần nhất</label>
+          <span class="hint">Chọn 1 kim hoặc 10 kim ở góc trái bàn, rồi nhấn giữ trên bàn và kéo: buông để thả, vung tay rồi buông để ném. Kim luôn rơi lại trên bàn.</span>
+        </div>
+        <p class="caption">
+          <span class="key"><span class="swatch hit"></span>Kim cắt vạch</span>
+          <span class="key"><span class="swatch"></span>Kim không cắt vạch</span>
+          <span>Kim cũ hơn bị ẩn nhưng vẫn được tính. Hiện tối đa 2.500 kim.</span>
+        </p>
+        <p class="chart-title">Ước lượng π theo số kim đã thả</p>
+        <canvas id="b-conv" role="img" aria-label="Đồ thị ước lượng π hội tụ dần về giá trị thật khi số kim tăng"></canvas>
+      </div>
+
+      <div class="panel">
+        <div class="headline">
+          <span class="label">Ước lượng π</span>
+          <span class="value" id="b-pi">—</span>
+          <span class="sub" id="b-err">&nbsp;</span>
+        </div>
+
+        <div class="buttons">
+          <button class="primary" id="b-play" aria-pressed="false">Chạy tự động</button>
+          <button id="b-1">Tung 1</button>
+          <button id="b-100">Tung 100</button>
+          <button id="b-10k">Tung 10.000</button>
+          <button class="reset" id="b-reset">Làm lại từ đầu</button>
+        </div>
+
+        <div class="sliders">
+          <div class="field">
+            <label for="b-speed">Tốc độ tự động <output id="b-speed-out"></output></label>
+            <input type="range" id="b-speed" min="1" max="5" step="1" value="3">
+          </div>
+          <div class="field">
+            <label for="b-ratio">Tỉ lệ l / d <output id="b-ratio-out"></output></label>
+            <input type="range" id="b-ratio" min="0.1" max="1" step="0.05" value="1">
+          </div>
+          <p class="hint">Đổi tỉ lệ l / d sẽ bắt đầu lại thí nghiệm.</p>
+        </div>
+
+        <dl>
+          <dt>Số kim đã thả (N)</dt><dd id="b-n">0</dd>
+          <dt>Số kim cắt vạch (H)</dt><dd id="b-h">0</dd>
+          <dt>Tần suất H / N</dt><dd id="b-freq">—</dd>
+          <dt>Xác suất lý thuyết</dt><dd id="b-theory">—</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="common.js"></script>
+<script src="buffon.js"></script>
+</body>
+</html>
