@@ -105,13 +105,6 @@
     }
     return true;
   }
-  function insideFrame(p) { return p.every(([x, y]) => x >= 0 && x <= N && y >= 0 && y <= N); }
-  // Tổng diện tích luôn là 144, nên nằm trọn trong khung và không chồng nhau thì chắc chắn phủ kín.
-  function isSolved(polys) {
-    if (!polys.every(insideFrame)) return false;
-    for (let i = 0; i < polys.length; i++) for (let j = i + 1; j < polys.length; j++) if (overlaps(polys[i], polys[j])) return false;
-    return true;
-  }
   // Cách xếp thứ v: lật dọc / lật ngang từng nửa (2 bit mỗi nửa) rồi có thể đổi chỗ hai nửa (bit 4).
   function variantPts(i, v) {
     const left = i < HALF, x0 = left ? 0 : 6;
@@ -143,12 +136,18 @@
 
 
   /* ───────────── Trạng thái ───────────── */
-  // Toạ độ tính theo ô lưới, gốc là góc trên trái của khung vuông. Khay chứa mảnh nằm cạnh (hoặc dưới) khung.
-  const LAYOUTS = {
-    land: { x0: -1.5, y0: -3, x1: 30.5, y1: 15, tray: [14, -2, 30, 14] },
-    port: { x0: -2, y0: -1.5, x1: 14, y1: 28.5, tray: [-1, 14, 13, 28] },
-  };
-  const SAMPLES = 48;                      // lưới điểm thử để ước lượng phần đã phủ
+  // Hình con vật: toạ độ đích của từng mảnh (cùng thứ tự đỉnh với BASE), góc trên trái của hình là (0, 0).
+  const ANIMALS = [
+    { name: 'Thiên nga', polys: [[[0,12],[10,14],[12,12]],[[0,12],[8,16],[10,14]],[[12,12],[8,16],[12,18]],[[0,12],[3,12],[2,8]],[[3,12],[3,6],[2,8]],[[21,12],[24,12],[24,6],[22,4],[21,6]],[[22,4],[24,6],[24,0]],[[6,12],[10,10],[12,12]],[[12,12],[10,10],[12,9],[18,12]],[[24,6],[24,0],[28,4]],[[28,4],[24,0],[30,3]],[[18,15],[24,12],[18,12]],[[18,15],[18,12],[16,12]],[[12,18],[18,15],[16,12],[12,12]]] },
+    { name: 'Vịt', polys: [[[18,9],[8,11],[6,9]],[[18,9],[10,13],[8,11]],[[6,9],[10,13],[6,15]],[[6,0],[6,3],[2,2]],[[6,3],[0,3],[2,2]],[[3,3],[6,3],[6,9],[4,11],[3,9]],[[4,11],[6,9],[6,15]],[[6,9],[10,7],[12,9]],[[12,9],[10,7],[12,6],[18,9]],[[18,15],[18,9],[22,13]],[[22,13],[18,9],[24,12]],[[12,12],[6,15],[12,15]],[[12,12],[12,15],[14,15]],[[18,9],[12,12],[14,15],[18,15]]] },
+    { name: 'Voi', polys: [[[18,3],[8,5],[6,3]],[[18,3],[10,7],[8,5]],[[6,3],[10,7],[6,9]],[[18,3],[18,6],[14,5]],[[18,6],[12,6],[14,5]],[[18,6],[18,9],[12,9],[10,7],[12,6]],[[10,7],[12,9],[6,9]],[[0,15],[2,11],[0,9]],[[0,9],[2,11],[3,9],[0,3]],[[6,6],[6,0],[2,4]],[[2,4],[6,0],[0,3]],[[15,9],[18,15],[18,9]],[[18,6],[18,3],[20,3]],[[12,9],[9,15],[6,13],[6,9]]] },
+    { name: 'Cá', polys: [[[0,6],[10,4],[12,6]],[[0,6],[8,2],[10,4]],[[12,6],[8,2],[12,0]],[[12,12],[12,9],[8,10]],[[12,9],[6,9],[8,10]],[[12,9],[12,6],[6,6],[4,8],[6,9]],[[4,8],[6,6],[0,6]],[[27,12],[25,8],[27,6]],[[27,6],[25,8],[24,6],[27,0]],[[12,6],[18,6],[14,10]],[[14,10],[18,6],[15,12]],[[18,3],[24,6],[18,6]],[[18,3],[18,6],[16,6]],[[12,0],[18,3],[16,6],[12,6]]] },
+    { name: 'Thỏ', polys: [[[18,12],[8,14],[6,12]],[[18,12],[10,16],[8,14]],[[6,12],[10,16],[6,18]],[[21,18],[18,18],[19,14]],[[18,18],[18,12],[19,14]],[[9,12],[6,12],[6,6],[8,4],[9,6]],[[8,4],[6,6],[6,0]],[[9,12],[11,8],[9,6]],[[9,6],[11,8],[12,6],[9,0]],[[6,15],[6,9],[2,13]],[[2,13],[6,9],[0,12]],[[12,15],[6,18],[12,18]],[[12,15],[12,18],[14,18]],[[18,12],[12,15],[14,18],[18,18]]] },
+    { name: 'Chó', polys: [[[21,6],[11,8],[9,6]],[[21,6],[13,10],[11,8]],[[9,6],[13,10],[9,12]],[[18,12],[21,12],[20,16]],[[21,12],[21,18],[20,16]],[[9,6],[6,6],[6,12],[8,14],[9,12]],[[8,14],[6,12],[6,18]],[[21,12],[23,8],[21,6]],[[21,6],[23,8],[24,6],[21,0]],[[6,9],[6,3],[2,7]],[[2,7],[6,3],[0,6]],[[15,9],[9,12],[15,12]],[[15,9],[15,12],[17,12]],[[21,6],[15,9],[17,12],[21,12]]] },
+    { name: 'Hươu cao cổ', polys: [[[18,14],[8,16],[6,14]],[[18,14],[10,18],[8,16]],[[6,14],[10,18],[6,20]],[[15,20],[18,20],[17,24]],[[18,20],[18,26],[17,24]],[[9,14],[6,14],[6,8],[8,6],[9,8]],[[8,6],[6,8],[6,2]],[[18,20],[14,18],[12,20]],[[12,20],[14,18],[12,17],[6,20]],[[18,20],[18,14],[14,18]],[[14,18],[18,14],[12,17]],[[9,20],[6,26],[6,20]],[[3,2],[6,2],[6,0]],[[0,2],[3,8],[6,6],[6,2]]] },
+  ];
+
+  const STEP = 0.25;                       // khoảng cách các điểm thử để ước lượng phần đã phủ
   const ANIM_MS = 650;
   const cv = $('s-canvas');
   const S = {
@@ -160,9 +159,48 @@
     sel: -1, drag: null, anim: null, variant: 0, moves: 0, dirty: true,
     showGrid: true, showLabels: true, portrait: null, view: null,
     solved: false, viewing: false, dark: null,
+    mode: 'square',                        // 'square' | 'free' | chỉ số trong ANIMALS
+    T: null,                               // hình đích: các đa giác tạo nên bóng, kích thước, điểm thử
+    L: null,                               // bố cục bàn: biên vùng làm việc và khay chứa mảnh
   };
 
-  const layout = () => LAYOUTS[S.portrait ? 'port' : 'land'];
+  const isSquare = () => S.mode === 'square';
+  const lower = (s) => s.toLocaleLowerCase('vi');
+  // Vị trí đúng của mảnh i trong hình đích hiện tại.
+  function solution(i) {
+    return isSquare() ? variantPts(i, S.variant) : ANIMALS[S.mode].polys[i].map((v) => v.slice());
+  }
+  function makeTarget() {
+    if (S.mode === 'free') return null;
+    const shape = isSquare() ? [[[0, 0], [N, 0], [N, N], [0, N]]] : ANIMALS[S.mode].polys;
+    let w = 0, h = 0;
+    for (const p of shape) for (const [x, y] of p) { if (x > w) w = x; if (y > h) h = y; }
+    // Điểm thử lệch khỏi mọi đường lưới và đường chéo để không rơi đúng lên cạnh mảnh.
+    const samples = [];
+    for (let i = 0; i < w / STEP; i++) for (let j = 0; j < h / STEP; j++) {
+      const x = (i + 0.37) * STEP, y = (j + 0.61) * STEP;
+      if (shape.some((p) => contains(p, x, y))) samples.push([x, y]);
+    }
+    return { shape, w, h, samples, label: isSquare() ? 'hình vuông' : 'hình ' + lower(ANIMALS[S.mode].name) };
+  }
+  const inTarget = (x, y) => S.T.shape.some((p) => contains(p, x, y));
+  // Mảnh nằm trọn trong hình đích: thử mọi đỉnh và trung điểm cạnh (với hình vuông thì phép thử này chính xác).
+  function pieceInside(p) {
+    if (!S.T) return false;
+    return p.every((a, n) => { const b = p[(n + 1) % p.length]; return inTarget(a[0], a[1]) && inTarget((a[0] + b[0]) / 2, (a[1] + b[1]) / 2); });
+  }
+  // Toạ độ tính theo ô lưới, gốc là góc trên trái của hình đích. Khay chứa mảnh nằm cạnh (hoặc dưới) hình đích.
+  function computeLayout() {
+    const T = S.T;
+    if (!T) return S.portrait ? { x0: -2, y0: -1.5, x1: 14, y1: 28.5, tray: [-1, -1, 13, 28] } : { x0: -1.5, y0: -3, x1: 30.5, y1: 15, tray: [-1, -2, 30, 14] };
+    if (S.portrait) {
+      const W = Math.max(T.w, N) + 4, x0 = -(W - T.w) / 2;
+      return { x0, y0: -1.5, x1: x0 + W, y1: T.h + 16.5, tray: [Math.ceil(x0 + 0.5), T.h + 2, Math.floor(x0 + W - 0.5), T.h + 16] };
+    }
+    const trayW = T.w > 20 ? 13 : 16, H = Math.max(18, T.h + 3), y0 = -(H - T.h) / 2;
+    return { x0: -1.5, y0, x1: T.w + 2 + trayW + 0.5, y1: y0 + H, tray: [T.w + 2, Math.ceil(y0 + 0.5), T.w + 2 + trayW, Math.floor(y0 + H - 0.5)] };
+  }
+  const layout = () => S.L;
   const rnd = (n) => Math.floor(Math.random() * (n + 1));
   function pieceColor(i, dark) {
     const h = Math.round(((i * 5) % 14) * 360 / 14 + 8);
@@ -220,30 +258,41 @@
     startAnim(from);
     afterChange();
   }
+  function setMode(mode) {
+    const from = snapshot();
+    S.mode = mode; S.variant = 0;
+    S.T = makeTarget(); S.L = computeLayout();
+    scatter(S.pieces.map((_, i) => i), true);
+    S.moves = 0; S.sel = -1; S.viewing = false;
+    startAnim(from);
+    afterChange();
+  }
   function showSolution(v) {
+    if (!S.T) return;
     const from = snapshot();
     S.variant = v;
-    S.pieces.forEach((p, i) => { p.pts = variantPts(i, v); });
+    S.pieces.forEach((p, i) => { p.pts = solution(i); });
     S.sel = -1; S.viewing = true;
     startAnim(from);
     afterChange();
   }
   // Chọn cách xếp đang khớp nhiều mảnh nhất với bàn hiện tại rồi đặt thêm một mảnh vào đúng chỗ.
   function hint() {
+    if (!S.T) return;
     let bestV = S.variant, bestN = -1;
-    for (let k = 0; k < VARIANTS; k++) {
+    for (let k = 0; isSquare() && k < VARIANTS; k++) {
       const v = (S.variant + k) % VARIANTS;
       let n = 0;
       S.pieces.forEach((p, i) => { if (samePoly(p.pts, variantPts(i, v))) n++; });
       if (n > bestN) { bestN = n; bestV = v; }
     }
     S.variant = bestV;
-    const todo = S.pieces.map((p, i) => i).filter((i) => !samePoly(S.pieces[i].pts, variantPts(i, bestV)));
+    const todo = S.pieces.map((p, i) => i).filter((i) => !samePoly(S.pieces[i].pts, solution(i)));
     if (!todo.length) return;
     // Ưu tiên mảnh lớn trước cho dễ hình dung.
     todo.sort((a, b) => S.pieces[b].area - S.pieces[a].area);
     const id = todo[0], from = snapshot();
-    S.pieces[id].pts = variantPts(id, bestV);
+    S.pieces[id].pts = solution(id);
     select(id);
     S.moves++;
     startAnim(from);
@@ -285,35 +334,54 @@
   }
 
   function afterChange() {
-    const polys = S.pieces.map((p) => p.pts);
-    S.solved = isSolved(polys);
+    const polys = S.pieces.map((p) => p.pts), T = S.T;
+    const st = $('s-status');
+    $('s-moves').textContent = int(S.moves);
+    $('s-hint').disabled = $('s-solve').disabled = !T;
+    $('s-next').disabled = !isSquare();
+    updateSelection();
+    S.dirty = true;
+    if (!T) {
+      S.solved = false;
+      $('s-cover-label').textContent = 'Chế độ tự do';
+      $('s-cover').textContent = '14 mảnh';
+      $('s-sub').textContent = 'không có hình đích';
+      $('s-over').textContent = $('s-in').textContent = '—';
+      st.classList.remove('done');
+      st.textContent = 'Xếp 14 mảnh thành bất kỳ hình nào bạn thích: con vật, ngôi nhà, con thuyền…';
+      return;
+    }
+    const inside = polys.filter(pieceInside).length;
+    let clean = inside === polys.length;
+    for (let i = 0; clean && i < polys.length; i++) for (let j = i + 1; j < polys.length; j++) if (overlaps(polys[i], polys[j])) { clean = false; break; }
+    const boxes = polys.map(bbox);
     let cover = 0, over = 0;
-    const near = polys.filter((p) => { const b = bbox(p); return b.x1 > 0 && b.x0 < N && b.y1 > 0 && b.y0 < N; });
-    // Điểm thử lệch khỏi mọi đường lưới và đường chéo để không rơi đúng lên cạnh mảnh.
-    for (let i = 0; i < SAMPLES; i++) for (let j = 0; j < SAMPLES; j++) {
-      const x = (i + 0.37) * N / SAMPLES, y = (j + 0.61) * N / SAMPLES;
+    for (const [x, y] of T.samples) {
       let c = 0;
-      for (const p of near) if (contains(p, x, y) && ++c > 1) break;
+      for (let i = 0; i < polys.length && c < 2; i++) {
+        const b = boxes[i];
+        if (x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1 && contains(polys[i], x, y)) c++;
+      }
       if (c > 0) cover++;
       if (c > 1) over++;
     }
-    const total = SAMPLES * SAMPLES;
+    const total = T.samples.length;
+    // Tổng diện tích luôn là 144: nằm trọn trong hình, không chồng nhau và phủ hết điểm thử thì đã ghép kín.
+    S.solved = clean && cover === total;
     let pc = Math.round(cover / total * 100), po = Math.round(over / total * 100);
     if (S.solved) { pc = 100; po = 0; } else if (pc === 100) pc = 99;
-    const inside = polys.filter(insideFrame).length;
+    $('s-cover-label').textContent = 'Đã phủ kín ' + T.label;
     $('s-cover').textContent = pc + '%';
     $('s-sub').textContent = S.solved ? '144 / 144 ô' : `khoảng ${int(Math.round(cover / total * 144))} / 144 ô`;
     $('s-over').textContent = po + '%';
     $('s-in').textContent = `${inside} / ${polys.length}`;
-    $('s-moves').textContent = int(S.moves);
-    const st = $('s-status');
     st.classList.toggle('done', S.solved);
-    if (S.solved && S.viewing) st.textContent = `Cách xếp ${S.variant + 1}/${VARIANTS}${S.variant === 0 ? ' (lời giải gốc của Archimedes)' : ''}. Bấm Xáo trộn để tự thử.`;
-    else if (S.solved) st.textContent = `Hoàn thành! 14 mảnh đã ghép kín hình vuông sau ${int(S.moves)} lần di chuyển.`;
-    else if (inside === polys.length) st.textContent = 'Cả 14 mảnh đã ở trong khung nhưng còn chồng lên nhau.';
-    else st.textContent = 'Kéo các mảnh vào khung để ghép kín hình vuông 12 × 12.';
-    updateSelection();
-    S.dirty = true;
+    if (S.solved && S.viewing && isSquare()) st.textContent = `Cách xếp ${S.variant + 1}/${VARIANTS}${S.variant === 0 ? ' (lời giải gốc của Archimedes)' : ''}. Bấm Xáo trộn để tự thử.`;
+    else if (S.solved && S.viewing) st.textContent = `Lời giải cho ${T.label}. Bấm Xáo trộn để tự thử.`;
+    else if (S.solved) st.textContent = `Hoàn thành! 14 mảnh đã ghép kín ${T.label} sau ${int(S.moves)} lần di chuyển.`;
+    else if (inside === polys.length) st.textContent = 'Cả 14 mảnh đã ở trong hình nhưng còn chồng lên nhau.';
+    else if (isSquare()) st.textContent = 'Kéo các mảnh vào khung để ghép kín hình vuông 12 × 12.';
+    else st.textContent = `Kéo các mảnh vào bóng để ghép thành ${T.label}.`;
   }
 
 
@@ -323,9 +391,10 @@
     if (S.portrait !== portrait) {
       const first = S.portrait === null;
       S.portrait = portrait;
+      S.L = computeLayout();
       if (!first) {
-        // Đổi bố cục ngang/dọc: giữ các mảnh đang nằm trong khung, rải lại phần còn lại vào khay mới.
-        const out = S.pieces.map((_, i) => i).filter((i) => !insideFrame(S.pieces[i].pts));
+        // Đổi bố cục ngang/dọc: giữ các mảnh đang nằm trong hình đích, rải lại phần còn lại vào khay mới.
+        const out = S.pieces.map((_, i) => i).filter((i) => !pieceInside(S.pieces[i].pts));
         S.anim = null;
         scatter(out, false);
         afterChange();
@@ -362,28 +431,30 @@
       if (t >= 1) S.anim = null;
     }
 
-    // Khung vuông
-    ctx.fillStyle = pal.plank;
-    ctx.fillRect(X(0), Y(0), N * unit, N * unit);
+    // Điểm lưới trên cả bàn
     if (S.showGrid) {
-      ctx.strokeStyle = pal.line; ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let i = 1; i < N; i++) {
-        const a = Math.round(X(i)) + 0.5, b = Math.round(Y(i)) + 0.5;
-        ctx.moveTo(a, Y(0)); ctx.lineTo(a, Y(N));
-        ctx.moveTo(X(0), b); ctx.lineTo(X(N), b);
-      }
-      ctx.stroke();
       ctx.fillStyle = pal.line;
       const d = Math.max(1.5, unit * 0.07);
-      for (let x = Math.ceil(L.x0); x <= Math.floor(L.x1); x++) for (let y = Math.ceil(L.y0); y <= Math.floor(L.y1); y++) {
-        if (x >= 0 && x <= N && y >= 0 && y <= N) continue;
-        ctx.fillRect(X(x) - d / 2, Y(y) - d / 2, d, d);
+      for (let x = Math.ceil(L.x0); x <= Math.floor(L.x1); x++) for (let y = Math.ceil(L.y0); y <= Math.floor(L.y1); y++) ctx.fillRect(X(x) - d / 2, Y(y) - d / 2, d, d);
+    }
+    // Bóng của hình đích: viền ngoài, nền, rồi lưới ô vuông cắt theo bóng
+    const T = S.T;
+    if (T) {
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      for (const p of T.shape) { p.forEach((v, n) => (n ? ctx.lineTo(X(v[0]), Y(v[1])) : ctx.moveTo(X(v[0]), Y(v[1])))); ctx.closePath(); }
+      ctx.strokeStyle = S.solved ? pal.accent : pal.muted; ctx.lineWidth = 4; ctx.stroke();
+      ctx.fillStyle = ctx.strokeStyle = pal.plank; ctx.lineWidth = 1; ctx.fill(); ctx.stroke();
+      if (S.showGrid) {
+        ctx.save(); ctx.clip();
+        ctx.strokeStyle = pal.line; ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 0; i <= T.w; i++) { const a = Math.round(X(i)) + 0.5; ctx.moveTo(a, Y(0)); ctx.lineTo(a, Y(T.h)); }
+        for (let i = 0; i <= T.h; i++) { const b = Math.round(Y(i)) + 0.5; ctx.moveTo(X(0), b); ctx.lineTo(X(T.w), b); }
+        ctx.stroke();
+        ctx.restore();
       }
     }
-    ctx.strokeStyle = S.solved ? pal.accent : pal.muted;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(X(0), Y(0), N * unit, N * unit);
 
     // Các mảnh
     const fs = Math.max(10, Math.min(15, unit * 0.52));
@@ -491,6 +562,10 @@
   $('s-hint').addEventListener('click', hint);
   $('s-solve').addEventListener('click', () => showSolution(S.variant));
   $('s-next').addEventListener('click', () => showSolution(S.viewing && S.solved ? (S.variant + 1) % VARIANTS : S.variant));
+  const modeSel = $('s-mode');
+  ANIMALS.forEach((a, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = a.name; $('s-animals').appendChild(o); });
+  modeSel.value = 'square';
+  modeSel.addEventListener('change', () => { const v = modeSel.value; setMode(v === 'square' || v === 'free' ? v : Number(v)); });
   $('s-grid').addEventListener('change', (e) => { S.showGrid = e.target.checked; S.dirty = true; });
   $('s-labels').addEventListener('change', (e) => { S.showLabels = e.target.checked; S.dirty = true; });
 
@@ -500,6 +575,8 @@
     const r = cv.getBoundingClientRect();
     S.portrait = r.height > r.width * 1.1;
   }
+  S.T = makeTarget();
+  S.L = computeLayout();
   S.viewing = true;
   afterChange();
   watch([cv], () => { S.dirty = true; });
