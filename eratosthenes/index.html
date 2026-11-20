@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sàng Eratosthenes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <script src="../nav.js"></script>
+  </header>
+
+  <section id="sieve" aria-labelledby="e-title">
+    <div class="intro">
+      <h2 id="e-title">Sàng Eratosthenes</h2>
+      <p>Viết các số từ 1 đến <i>N</i>. Lấy số nhỏ nhất chưa bị gạch, gọi là <i>p</i>: nó là số nguyên tố. Gạch mọi bội của <i>p</i>, bắt đầu từ <i>p</i>², vì các bội nhỏ hơn đã bị những số nguyên tố trước đó gạch rồi. Lặp lại cho đến khi <i>p</i>² vượt quá <i>N</i>. Những số còn lại đều là số nguyên tố.</p>
+      <div class="formula">
+        <span>Gạch p², p² + p, p² + 2p, …</span>
+        <span>Dừng khi p² &gt; N</span>
+        <span>π(N) ≈ N / ln N</span>
+      </div>
+    </div>
+
+    <div class="sim">
+      <div class="stage">
+        <canvas id="e-canvas" role="img" aria-label="Bảng các số từ 1 đến N, hợp số bị gạch dần, số nguyên tố được tô màu. Bấm vào một số để tự gạch."></canvas>
+        <p class="caption">
+          <span class="key"><span class="swatch box prime"></span>Số nguyên tố</span>
+          <span class="key"><span class="swatch box cur"></span>Số p đang sàng và bội vừa gạch</span>
+          <span class="key"><span class="swatch box comp"></span>Hợp số đã gạch</span>
+          <span class="key"><span class="swatch box open"></span>Chưa xét</span>
+          <span class="key"><span class="swatch box ok"></span>Tự gạch đúng</span>
+          <span class="key"><span class="swatch box bad"></span>Tự gạch sai</span>
+        </p>
+      </div>
+
+      <div class="panel">
+        <div class="headline">
+          <span class="label" id="e-label">Số chưa bị gạch</span>
+          <span class="value" id="e-left">0</span>
+          <span class="sub" id="e-status"></span>
+        </div>
+
+        <div class="buttons">
+          <button class="primary" id="e-play" aria-pressed="false">Chạy tự động</button>
+          <button id="e-step">1 bước</button>
+          <button id="e-round">Hết lượt p</button>
+          <button id="e-all">Sàng hết</button>
+          <button class="exam" id="e-exam" aria-pressed="false">Thi tính giờ</button>
+          <button class="reset" id="e-reset">Làm lại từ đầu</button>
+        </div>
+
+        <div class="sliders">
+          <div class="field">
+            <label for="e-speed">Tốc độ <output id="e-speed-out"></output></label>
+            <input type="range" id="e-speed" min="1" max="5" step="1" value="3">
+          </div>
+          <div class="field">
+            <label for="e-n">Số lớn nhất N <output id="e-n-out"></output></label>
+            <input type="range" id="e-n" min="30" max="1000" step="10" value="100">
+          </div>
+          <div class="field">
+            <label for="e-cols">Số cột <output id="e-cols-out"></output></label>
+            <input type="range" id="e-cols" min="2" max="40" step="1" value="10">
+          </div>
+          <p class="hint">Bấm vào một số trên bảng để tự gạch: hợp số thì nháy xanh và bị gạch, số nguyên tố (hoặc số 1) thì nháy đỏ và không bị gạch.</p>
+          <p class="hint">Thi tính giờ: bảng trở về ban đầu, bạn tự gạch hết mọi hợp số; đồng hồ dừng khi không còn hợp số nào. Bấm sai không bị gạch nhưng được đếm lại.</p>
+          <p class="hint">Đổi N sẽ bắt đầu lại. Đổi số cột thì không: thử 6 cột để thấy mọi số nguyên tố lớn hơn 3 đều nằm ở cột 1 và cột 5.</p>
+        </div>
+
+        <dl>
+          <dt>Đang sàng p</dt><dd id="e-p">—</dd>
+          <dt>Bội vừa xét</dt><dd id="e-m">—</dd>
+          <dt>Hợp số đã gạch</dt><dd id="e-struck">0</dd>
+          <dt>Tự gạch đúng</dt><dd id="e-ok">0</dd>
+          <dt>Tự gạch sai</dt><dd id="e-bad">0</dd>
+          <dt>Kỷ lục thi với N này</dt><dd id="e-best">—</dd>
+          <dt>√N</dt><dd id="e-sqrt">—</dd>
+          <dt>Ước lượng N / ln N</dt><dd id="e-approx">—</dd>
+        </dl>
+
+        <table class="bins">
+          <thead><tr><th scope="col">p</th><th scope="col">Bắt đầu từ p²</th><th scope="col">Gạch mới</th></tr></thead>
+          <tbody id="e-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>

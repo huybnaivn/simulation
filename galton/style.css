@@ -71,10 +71,11 @@ button[aria-pressed="true"]:not(.primary) { border-color: var(--accent); color: 
 #g-canvas { aspect-ratio: 5 / 4; }
 .caption { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 0; }
 .key { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.key.toggle { cursor: pointer; }
+.key.toggle input { margin: 0; accent-color: var(--accent); }
 .swatch { width: 18px; height: 3px; border-radius: 2px; background: var(--muted); }
 .swatch.hit { background: var(--hit); }
-.swatch.acc { background: var(--accent); height: 9px; width: 9px; border-radius: 1px; }
-.swatch.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--panel); border: 1.5px solid var(--ink); }
+.swatch.acc { background: var(--accent); height: 9px; width: 9px; border-radius: 50%; }
 
 .panel { min-width: 0; display: flex; flex-direction: column; gap: 20px; }
 .buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
@@ -106,6 +107,12 @@ dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; borde
 dt, dd { margin: 0; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
 dt { color: var(--muted); }
 dd { font-family: var(--font-data); font-variant-numeric: tabular-nums; text-align: right; padding-left: 12px; }
+
+table.bins { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.bins th { text-align: right; font-weight: 600; color: var(--muted); padding: 4px 0; border-bottom: 1px solid var(--line); }
+.bins td { text-align: right; padding: 3px 0; border-bottom: 1px solid var(--line); font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.bins th:first-child, .bins td:first-child { text-align: left; color: var(--muted); }
+.bins td:last-child { color: var(--muted); }
 
 @media (max-width: 1000px) {
   .page { grid-template-columns: minmax(0, 1fr); }
