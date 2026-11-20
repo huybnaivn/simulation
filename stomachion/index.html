@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stomachion của Archimedes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <script src="../nav.js"></script>
+  </header>
+
+  <section id="stomachion" aria-labelledby="s-title">
+    <div class="intro">
+      <h2 id="s-title">Stomachion của Archimedes</h2>
+      <p>Bộ 14 mảnh cắt ra từ một hình vuông, là trò xếp hình cổ nhất còn được ghi lại (khoảng thế kỷ 3 trước Công nguyên). Mọi đỉnh của các mảnh đều nằm trên lưới 12 × 12, nên diện tích mỗi mảnh là một số nguyên ô vuông. Năm 2003, Bill Cutler dùng máy tính đếm được 536 cách ghép 14 mảnh thành hình vuông, hay 17.152 cách nếu tính riêng các phép xoay và lật.</p>
+      <div class="formula">
+        <span>S = I + B/2 − 1 (định lý Pick)</span>
+        <span>3·2 + 6·4 + 9 + 12·5 + 21 + 24 = 144 = 12²</span>
+      </div>
+    </div>
+
+    <div class="sim">
+      <div class="stage">
+        <canvas id="s-canvas" tabindex="0" role="img" aria-label="Bàn xếp hình: khung vuông 12 × 12 và 14 mảnh Stomachion có thể kéo, xoay, lật"></canvas>
+        <p class="caption">
+          <label class="key toggle"><input type="checkbox" id="s-grid" checked>Lưới ô vuông</label>
+          <label class="key toggle"><input type="checkbox" id="s-labels" checked>Ghi diện tích lên mảnh</label>
+          <span class="key">Kéo để di chuyển · nhấp đúp hoặc phím R để xoay · F để lật · mũi tên để dịch từng ô</span>
+        </p>
+      </div>
+
+      <div class="panel">
+        <div class="headline">
+          <span class="label">Đã phủ kín hình vuông</span>
+          <span class="value" id="s-cover">0%</span>
+          <span class="sub" id="s-sub">—</span>
+        </div>
+
+        <p class="status" id="s-status" role="status" aria-live="polite"></p>
+
+        <div class="buttons">
+          <button class="primary" id="s-shuffle">Xáo trộn các mảnh</button>
+          <button id="s-rot">Xoay 90°</button>
+          <button id="s-flip">Lật</button>
+          <button id="s-hint">Gợi ý</button>
+          <button id="s-solve">Lời giải</button>
+          <button class="wide" id="s-next">Cách xếp khác</button>
+        </div>
+        <p class="hint">Chọn một mảnh rồi bấm Xoay hoặc Lật. Gợi ý đặt đúng chỗ một mảnh. Cách xếp khác lần lượt cho xem 32 cách có được khi lật hoặc đổi chỗ hai nửa của lời giải gốc.</p>
+
+        <dl>
+          <dt>Phần bị chồng lấn</dt><dd id="s-over">—</dd>
+          <dt>Mảnh nằm trọn trong khung</dt><dd id="s-in">—</dd>
+          <dt>Số lần di chuyển</dt><dd id="s-moves">0</dd>
+        </dl>
+
+        <table class="bins">
+          <thead><tr><th scope="col">Mảnh</th><th scope="col">B</th><th scope="col">I</th><th scope="col">S</th><th scope="col">Tỉ lệ</th></tr></thead>
+          <tbody id="s-table-body"></tbody>
+          <tfoot><tr><td>Tổng</td><td></td><td></td><td>144</td><td>1</td></tr></tfoot>
+        </table>
+        <p class="hint">B là số điểm lưới nằm trên biên của mảnh, I là số điểm lưới nằm hẳn bên trong, S là diện tích tính theo ô. Tỉ lệ là phần diện tích so với cả hình vuông.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>
