@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bài toán Monty Hall</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <script src="../nav.js"></script>
+  </header>
+
+  <section id="monty" aria-labelledby="m-title">
+    <div class="intro">
+      <h2 id="m-title">Bài toán Monty Hall</h2>
+      <p>Sau một trong <i>n</i> cánh cửa là ô tô, sau các cửa còn lại là dê. Bạn chọn một cửa. Người dẫn chương trình biết ô tô ở đâu, mở <i>k</i> cửa khác và luôn chỉ mở cửa có dê. Giờ bạn được giữ cửa đã chọn hoặc đổi sang một cửa còn đóng khác. Nên đổi hay giữ? Bài toán gốc có 3 cửa và người dẫn mở 1 cửa.</p>
+      <div class="formula">
+        <span>P(thắng khi giữ) = 1 / n</span>
+        <span>P(thắng khi đổi) = (n − 1) / (n · (n − k − 1))</span>
+      </div>
+    </div>
+
+    <div class="sim">
+      <div class="stage">
+        <div class="doors" id="m-doors"></div>
+        <p class="status" id="m-status" aria-live="polite"></p>
+        <div class="choice">
+          <button id="m-stay" hidden></button>
+          <button id="m-switch" hidden></button>
+          <button id="m-next" hidden>Ván mới</button>
+        </div>
+        <p class="chart-title">Tỉ lệ thắng theo số ván đã chơi</p>
+        <canvas id="m-chart" role="img" aria-label="Đồ thị tỉ lệ thắng của hai chiến lược đổi cửa và giữ cửa, hội tụ dần về xác suất lý thuyết khi số ván tăng"></canvas>
+        <p class="caption">
+          <span class="key"><span class="swatch sw"></span>Đổi cửa</span>
+          <span class="key"><span class="swatch st"></span>Giữ cửa</span>
+          <span class="key"><span class="swatch dash"></span>Xác suất lý thuyết</span>
+        </p>
+      </div>
+
+      <div class="panel">
+        <div class="headline">
+          <span class="label">Tỉ lệ thắng khi đổi cửa</span>
+          <span class="value" id="m-rate">—</span>
+          <span class="sub" id="m-sub">&nbsp;</span>
+        </div>
+
+        <div class="buttons">
+          <button class="primary" id="m-play" aria-pressed="false">Chạy tự động</button>
+          <button id="m-1">Chơi 1</button>
+          <button id="m-100">Chơi 100</button>
+          <button id="m-10k">Chơi 10.000</button>
+          <button class="reset" id="m-reset">Làm lại từ đầu</button>
+        </div>
+
+        <div class="sliders">
+          <div class="field">
+            <span class="field-label" id="m-strat-label">Chiến lược khi máy chơi</span>
+            <div class="seg" id="m-strat" role="group" aria-labelledby="m-strat-label">
+              <button data-strat="alt" aria-pressed="true">Xen kẽ</button>
+              <button data-strat="sw" aria-pressed="false">Luôn đổi</button>
+              <button data-strat="st" aria-pressed="false">Luôn giữ</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="m-speed">Tốc độ tự động <output id="m-speed-out"></output></label>
+            <input type="range" id="m-speed" min="1" max="5" step="1" value="3">
+          </div>
+          <div class="field">
+            <label for="m-n">Số cửa n <output id="m-n-out"></output></label>
+            <input type="range" id="m-n" min="3" max="100" step="1" value="3">
+          </div>
+          <div class="field">
+            <label for="m-k">Số cửa người dẫn mở k <output id="m-k-out"></output></label>
+            <input type="range" id="m-k" min="1" max="1" step="1" value="1">
+          </div>
+          <p class="hint">Tự chơi: bấm vào một cánh cửa, rồi chọn giữ hay đổi. Ván tự chơi cũng được tính vào bảng số liệu.</p>
+          <p class="hint">Đổi n hoặc k sẽ bắt đầu lại. Khi đổi n, k trở về n − 2, tức người dẫn chỉ chừa lại một cửa.</p>
+          <p class="hint">Thử 100 cửa với k = 98: cửa bạn chọn lúc đầu chỉ trúng 1 / 100, nên ô tô gần như chắc chắn nằm sau cánh cửa mà người dẫn cố tình không mở. Rồi kéo k xuống 1: đổi cửa vẫn lợi hơn giữ, nhưng chỉ hơn một chút.</p>
+        </div>
+
+        <table class="bins">
+          <thead><tr><th scope="col">Chiến lược</th><th scope="col">Số ván</th><th scope="col">Thắng</th><th scope="col">Tỉ lệ</th></tr></thead>
+          <tbody>
+            <tr><td>Đổi cửa</td><td id="m-sw-n">0</td><td id="m-sw-w">0</td><td id="m-sw-r">—</td></tr>
+            <tr><td>Giữ cửa</td><td id="m-st-n">0</td><td id="m-st-w">0</td><td id="m-st-r">—</td></tr>
+          </tbody>
+        </table>
+
+        <dl>
+          <dt>Tổng số ván</dt><dd id="m-total">0</dd>
+          <dt>Lý thuyết khi đổi</dt><dd id="m-th-sw">—</dd>
+          <dt>Lý thuyết khi giữ</dt><dd id="m-th-st">—</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>

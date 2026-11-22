@@ -8,6 +8,7 @@
     ['galton/index.html', 'Bảng Galton'],
     ['stomachion/index.html', 'Stomachion'],
     ['eratosthenes/index.html', 'Sàng Eratosthenes'],
+    ['montyhall/index.html', 'Monty Hall'],
   ];
 
   const script = document.currentScript;
